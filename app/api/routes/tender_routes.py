@@ -5,7 +5,7 @@ from app.domains.tender import service as tender_service
 from app.domains.tender.schemas import TenderCriterion
 from typing import List
 
-router = APIRouter(prefix="/api/v1/tenders", tags=["Tenders"])
+router = APIRouter(tags=["Tenders"])
 
 @router.post("/upload", response_model=List[TenderCriterion])
 async def upload_tender_document(

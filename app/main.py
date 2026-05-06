@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import tender_routes, vendor_routes
+from app.api.routes import tender_routes, vendor_routes, eval_routes
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -19,8 +19,9 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(tender_routes.router, prefix="/tender", tags=["Tender"])
-app.include_router(vendor_routes.router, prefix="/vendor", tags=["Vendor"])
+app.include_router(tender_routes.router, prefix="/api/v1/tenders", tags=["Tenders"])
+app.include_router(vendor_routes.router, prefix="/api/v1/vendors", tags=["Vendors"])
+app.include_router(eval_routes.router, prefix="/api/v1/evaluation", tags=["Evaluation"])
 
 @app.get("/")
 async def root():
