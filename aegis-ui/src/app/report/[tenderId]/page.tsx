@@ -36,7 +36,7 @@ export default function ReportPage() {
   }, [tenderId]);
 
   const handleExportCSV = () => {
-    window.location.href = `http://localhost:8000/api/v1/evaluation/report/${tenderId}?format=csv`;
+    window.location.href = `http://localhost:8080/api/v1/evaluation/report/${tenderId}?format=csv`;
   };
 
   // Group data by vendor for the matrix view
