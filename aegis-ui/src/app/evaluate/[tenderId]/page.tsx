@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import SplitScreenLayout from '@/components/layout/SplitScreenLayout';
 import PDFViewer from '@/components/pdf/PDFViewer';
@@ -10,36 +10,49 @@ import OverrideModal from '@/components/evaluation/OverrideModal';
 import { EvaluationResult } from '@/types';
 import { ArrowRight } from 'lucide-react';
 
-// Mock data to establish UI before wiring the FastAPI fetch
-const MOCK_RESULTS: EvaluationResult[] = [
-  {
-    vendor_id: "v-123",
-    criterion_id: "c-456",
-    status: "MANUAL_REVIEW_REQUIRED",
-    flag: "PROXIMITY_REVIEW_REQUIRED",
-    python_parsed_value: 50000000,
-    timestamp: new Date().toISOString(),
-    evidence_payload: {
-      raw_string: "Rs 5 Cr",
-      context_sentence: "The bidder must have a standalone turnover of Rs 5 Cr, while group turnover is Rs 12 Cr.",
-      page_num: 1,
-      source_chunk_bbox: [100, 250, 400, 280] // PyMuPDF coordinates
-    },
-    requires_human_override: true
-  }
-];
-
 export default function EvaluatePage() {
   const router = useRouter();
   const params = useParams();
-  const [results, setResults] = useState<EvaluationResult[]>(MOCK_RESULTS);
+  const [results, setResults] = useState<EvaluationResult[]>([]);
   const [activePage, setActivePage] = useState<number>(1);
   const [activeBBox, setActiveBBox] = useState<[number, number, number, number] | null>(null);
   const [activeCriterionId, setActiveCriterionId] = useState<string | null>(null);
   const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
+  const [activeVendorId, setActiveVendorId] = useState<string | null>(null);
   
   // This state will be updated by PDFViewer's onScaleCalculated event
   const [pdfScale, setPdfScale] = useState<number>(1.0); 
+
+  useEffect(() => {
+    async function loadResults() {
+      try {
+        const res = await fetch(`http://localhost:8080/api/v1/evaluation/report/${params.tenderId}?format=json`);
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
+        
+        // Transform report format back to EvaluationResult format for the UI
+        const mappedResults = data.map((r: any) => ({
+          vendor_id: r.vendor_id,
+          criterion_id: r.criterion_id,
+          status: r.status,
+          flag: r.reason.includes("PROXIMITY") ? "PROXIMITY_REVIEW_REQUIRED" : null,
+          timestamp: r.timestamp,
+          evidence_payload: {
+            raw_string: r.evidence.raw_string,
+            context_sentence: r.evidence.context_sentence,
+            page_num: r.evidence.page_number,
+            source_chunk_bbox: [100, 250, 400, 280] // Hardcoded fallback for now
+          },
+          requires_human_override: r.status === 'MANUAL_REVIEW_REQUIRED'
+        }));
+        
+        setResults(mappedResults);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadResults();
+  }, [params.tenderId]);
 
   const handleSelectCriterion = (id: string, pageNum: number, bbox?: [number, number, number, number]) => {
     setActiveCriterionId(id);
@@ -49,25 +62,48 @@ export default function EvaluatePage() {
     // Auto-open override if it's a review item (optional UX choice)
     const res = results.find(r => r.criterion_id === id);
     if (res?.status === 'MANUAL_REVIEW_REQUIRED') {
+        setActiveVendorId(res.vendor_id);
         setIsOverrideModalOpen(true);
     }
   };
 
-  const handleSubmitOverride = (verdict: "PASS" | "FAIL", annotation: string) => {
-    if (!activeCriterionId) return;
+  const handleSubmitOverride = async (verdict: "PASS" | "FAIL", annotation: string) => {
+    if (!activeCriterionId || !activeVendorId) return;
 
-    // Local state update (Mocking the POST response)
-    setResults(prev => prev.map(res => {
-      if (res.criterion_id === activeCriterionId) {
-        return {
-          ...res,
-          status: verdict as any,
-          flag: "HUMAN_OVERRIDDEN" as any,
-          requires_human_override: false
-        };
+    try {
+      // Call the backend to persist the append-only override
+      const response = await fetch(`http://localhost:8080/api/v1/evaluation/${activeVendorId}/${activeCriterionId}/override`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          officer_id: "OFFICER-77X",
+          verdict: verdict,
+          annotation: annotation
+        })
+      });
+
+      if (!response.ok) {
+         alert("Failed to submit override to the immutable ledger.");
+         return;
       }
-      return res;
-    }));
+      
+      const newAudit = await response.json();
+
+      // Local state update
+      setResults(prev => prev.map(res => {
+        if (res.criterion_id === activeCriterionId && res.vendor_id === activeVendorId) {
+          return {
+            ...res,
+            status: verdict as any,
+            flag: "HUMAN_OVERRIDDEN" as any,
+            requires_human_override: false
+          };
+        }
+        return res;
+      }));
+    } catch (err) {
+      console.error(err);
+    }
 
     console.log(`Submitting override for ${activeCriterionId}: ${verdict} - ${annotation}`);
     setIsOverrideModalOpen(false);

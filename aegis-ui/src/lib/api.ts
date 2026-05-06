@@ -2,7 +2,7 @@ import { TenderCriterion, VendorEvidence } from "@/types";
 
 const API_BASE_URL = "http://localhost:8080/api/v1";
 
-export async function uploadTender(file: File): Promise<TenderCriterion[]> {
+export async function uploadTender(file: File): Promise<{ tender_id: string; criteria: TenderCriterion[] }> {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -23,7 +23,7 @@ export async function uploadVendorEvidence(
   tenderId: string, 
   vendorName: string, 
   file: File
-): Promise<VendorEvidence[]> {
+): Promise<{ vendor_id: string; evidences: VendorEvidence[]; evaluations: any[] }> {
   const formData = new FormData();
   formData.append("tender_id", tenderId);
   formData.append("vendor_name", vendorName);

@@ -7,7 +7,7 @@ from typing import List
 
 router = APIRouter(tags=["Tenders"])
 
-@router.post("/upload", response_model=List[TenderCriterion])
+@router.post("/upload")
 async def upload_tender_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
@@ -23,6 +23,6 @@ async def upload_tender_document(
     
     # Pass to the domain service layer (business logic)
     # The service will handle the LLM call and DB persistence
-    extracted_criteria = await tender_service.process_tender_document(file.filename, file_bytes, db)
+    tender_id, extracted_criteria = await tender_service.process_tender_document(file.filename, file_bytes, db)
     
-    return extracted_criteria
+    return {"tender_id": tender_id, "criteria": extracted_criteria}

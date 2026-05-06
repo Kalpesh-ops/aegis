@@ -96,4 +96,4 @@ async def process_tender_document(filename: str, file_bytes: bytes, db: Session)
         logger.error(f"Database commit failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to persist tender criteria.")
 
-    return extracted_criteria
+    return tender_id, extracted_criteria

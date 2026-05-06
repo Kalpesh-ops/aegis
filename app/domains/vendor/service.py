@@ -122,4 +122,4 @@ async def process_vendor_document(
         logger.error(f"Vendor DB commit failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to persist vendor evidence.")
 
-    return extracted_evidences
+    return vendor_id, extracted_evidences
