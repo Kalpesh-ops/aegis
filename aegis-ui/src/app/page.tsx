@@ -15,18 +15,18 @@ export default function IngestionPage() {
   const [tenderFile, setTenderFile] = useState<File | null>(null);
   const [criteria, setCriteria] = useState<TenderCriterion[]>([]);
   const [tenderId, setTenderId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleTenderUpload = async (file: File) => {
     setIsUploading(true);
+    setError(null);
     try {
-      const extractedCriteria = await uploadTender(file);
-      setCriteria(extractedCriteria);
-      // Assuming the first criterion or a generic response contains tender_id
-      // For this demo, we'll mock the tenderId if not explicitly returned
-      setTenderId("tender-crpf-2024-001"); 
+      const payload = await uploadTender(file);
+      setCriteria(payload.criteria);
+      setTenderId(payload.tender_id); 
       setStep(2);
-    } catch (err) {
-      alert("Failed to upload tender. Check console for details.");
+    } catch (err: any) {
+      setError(err.message || "Failed to extract criteria from tender document.");
       console.error(err);
     } finally {
       setIsUploading(false);
@@ -40,12 +40,13 @@ export default function IngestionPage() {
   const handleVendorUpload = async (file: File) => {
     if (!tenderId) return;
     setIsUploading(true);
+    setError(null);
     try {
       await uploadVendorEvidence(tenderId, "Global Defense Systems Ltd", file);
       // In a real app, we'd add to a list of vendors. For demo, we proceed to evaluation.
       setStep(4);
-    } catch (err) {
-      alert("Failed to process vendor evidence.");
+    } catch (err: any) {
+      setError(err.message || "Failed to process vendor evidence.");
       console.error(err);
     } finally {
       setIsUploading(false);
@@ -54,6 +55,29 @@ export default function IngestionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+      {/* Error Modal Overlay */}
+      {error && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-in fade-in p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95">
+             <div className="bg-red-600 p-4 flex items-center space-x-3">
+                <ShieldCheck className="w-6 h-6 text-white" />
+                <h3 className="font-bold text-white">System Exception</h3>
+             </div>
+             <div className="p-6">
+                <p className="text-gray-700 font-medium mb-6">{error}</p>
+                <div className="flex justify-end">
+                   <button 
+                     onClick={() => setError(null)}
+                     className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-bold transition-colors"
+                   >
+                     Acknowledge
+                   </button>
+                </div>
+             </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
         <div className="bg-blue-600 p-8 text-white">
           <div className="flex items-center space-x-3 mb-2">

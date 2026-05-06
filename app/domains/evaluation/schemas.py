@@ -13,7 +13,7 @@ class EvaluationResult(BaseModel):
     vendor_id: str
     criterion_id: str
     status: Literal["PASS", "FAIL", "MANUAL_REVIEW_REQUIRED"]
-    flag: Optional[Literal["PROXIMITY_REVIEW_REQUIRED", "FORMAT_MISMATCH", "OCR_FAILURE"]] = None
+    flag: Optional[Literal["PROXIMITY_REVIEW_REQUIRED", "FORMAT_MISMATCH", "OCR_FAILURE", "LLM_PYTHON_MISMATCH", "MISSING_EVIDENCE", "HUMAN_OVERRIDDEN"]] = None
     python_parsed_value: Optional[float] = None
     timestamp: datetime = datetime.now()
 
