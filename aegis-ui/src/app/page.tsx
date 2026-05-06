@@ -59,18 +59,29 @@ export default function IngestionPage() {
       {error && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-in fade-in p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95">
-             <div className="bg-red-600 p-4 flex items-center space-x-3">
+             <div className={`p-4 flex items-center space-x-3 ${
+               error.toLowerCase().includes("rate") || error.toLowerCase().includes("quota") || error.toLowerCase().includes("429")
+                 ? "bg-amber-500" : "bg-red-600"
+             }`}>
                 <ShieldCheck className="w-6 h-6 text-white" />
-                <h3 className="font-bold text-white">System Exception</h3>
+                <h3 className="font-bold text-white">
+                  {error.toLowerCase().includes("rate") || error.toLowerCase().includes("quota") || error.toLowerCase().includes("429")
+                    ? "API Rate Limit Reached" : "System Exception"}
+                </h3>
              </div>
              <div className="p-6">
-                <p className="text-gray-700 font-medium mb-6">{error}</p>
-                <div className="flex justify-end">
+                <p className="text-gray-700 font-medium mb-2">{error}</p>
+                {(error.toLowerCase().includes("rate") || error.toLowerCase().includes("quota") || error.toLowerCase().includes("429")) && (
+                  <p className="text-sm text-amber-600 mb-4">
+                    The free-tier API quota has been temporarily exceeded. The system will automatically retry with alternative models. Please wait 30-60 seconds and try again.
+                  </p>
+                )}
+                <div className="flex justify-end space-x-3 mt-4">
                    <button 
                      onClick={() => setError(null)}
                      className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-bold transition-colors"
                    >
-                     Acknowledge
+                     Dismiss
                    </button>
                 </div>
              </div>
