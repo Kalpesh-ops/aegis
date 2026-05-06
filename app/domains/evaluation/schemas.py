@@ -18,11 +18,8 @@ class EvaluationResult(BaseModel):
     timestamp: datetime = datetime.now()
 
 class HumanOverride(BaseModel):
-    # Enforced Append-Only in DB
-    override_id: str
-    evaluation_id: str
+    """Lightweight request body for officer overrides. 
+    Server generates override_id, evaluation_id, and timestamp."""
     officer_id: str
-    original_verdict: str
-    new_verdict: str
-    annotation_text: str
-    timestamp: datetime
+    verdict: Literal["PASS", "FAIL"]
+    annotation: str

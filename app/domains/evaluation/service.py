@@ -145,8 +145,8 @@ def submit_human_override(
     new_audit_record = EvaluationAuditRecord(
         vendor_id=vendor_id,
         criterion_id=criterion_id,
-        status=DBStatusEnum[override.new_verdict],
-        reason=f"OFFICER OVERRIDE: {override.annotation_text}",
+        status=DBStatusEnum[override.verdict],
+        reason=f"OFFICER OVERRIDE: {override.annotation}",
         evidence_payload=last_record.evidence_payload, # Inherit original evidence
         requires_human_override=False, # Override resolves the manual review flag
         evaluated_by=override.officer_id,
@@ -165,7 +165,7 @@ def submit_human_override(
     return EvaluationResult(
         vendor_id=vendor_id,
         criterion_id=criterion_id,
-        status=override.new_verdict,
+        status=override.verdict,
         flag="HUMAN_OVERRIDDEN",
         python_parsed_value=last_record.python_parsed_value,
         timestamp=datetime.now(timezone.utc)
