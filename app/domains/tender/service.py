@@ -65,20 +65,28 @@ async def process_tender_document(filename: str, file_bytes: bytes, db: Session)
     try:
         db_tender = Tender(id=tender_id, title=filename)
         db.add(db_tender)
+        db.flush() # Force insert of tender to satisfy foreign key constraint
         
         for pydantic_crit in extracted_criteria:
             # Generate deterministic UUID for criterion
             crit_id = str(uuid.uuid4())
-            pydantic_crit.criterion_id = crit_id 
+            pydantic_crit.id = crit_id 
             
             db_crit = Criterion(
                 id=crit_id,
                 tender_id=tender_id,
-                category=pydantic_crit.category.value,
-                is_mandatory=pydantic_crit.is_mandatory,
+                category="compliance", # Default fallback
+                is_mandatory=True, # Legal language requirement
                 description=pydantic_crit.description,
-                search_vector={"trigger_phrases": pydantic_crit.trigger_phrases, "domain_keywords": pydantic_crit.domain_keywords},
-                extraction_meta=pydantic_crit.meta.model_dump()
+                search_vector={
+                    "threshold_value": pydantic_crit.threshold_value,
+                    "threshold_type": pydantic_crit.threshold_type,
+                    "unit": pydantic_crit.unit
+                },
+                extraction_meta={
+                    "source_chunk": pydantic_crit.source_chunk,
+                    "page_number": pydantic_crit.page_number
+                }
             )
             db.add(db_crit)
             

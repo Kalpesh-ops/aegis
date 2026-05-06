@@ -24,5 +24,6 @@ class VendorEvidenceRecord(Base):
     source_chunk = Column(String, nullable=False)
     page_number = Column(Integer, nullable=False)
     document_status = Column(String, nullable=False) # EXTRACTED, PARTIAL, FAILED
+    python_parsed_value = Column(Float, nullable=True)
     is_ambiguous = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

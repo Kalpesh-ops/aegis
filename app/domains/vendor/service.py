@@ -88,6 +88,7 @@ async def process_vendor_document(
     # 5. Dual-Pass Cross-Check & DB Persistence
     db_vendor = Vendor(id=vendor_id, name=vendor_name, tender_id=tender_id)
     db.add(db_vendor)
+    db.flush() # Force insert of vendor to satisfy evidence foreign key
     
     for evidence in extracted_evidences:
         # Dual-Pass: Python deterministic check vs LLM inferred check
@@ -109,6 +110,7 @@ async def process_vendor_document(
             source_chunk=evidence.source_chunk,
             page_number=evidence.page_number,
             document_status=evidence.document_status,
+            python_parsed_value=python_val,
             is_ambiguous=evidence.is_ambiguous
         )
         db.add(db_evidence)
