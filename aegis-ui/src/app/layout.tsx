@@ -23,10 +23,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${newsreader.variable} scroll-smooth`}>
-      <body className="min-h-full flex flex-col antialiased bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-300">
+    <html lang="en" suppressHydrationWarning className={`${newsreader.variable} scroll-smooth`} data-scroll-behavior="smooth">
+      <body className="min-h-screen flex flex-col overflow-x-hidden">
         <SmoothScroll>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
           </ThemeProvider>
         </SmoothScroll>

@@ -11,11 +11,11 @@ interface SplitScreenLayoutProps {
 
 export default function SplitScreenLayout({ leftPanel, rightPanel, className }: SplitScreenLayoutProps) {
   return (
-    <div className={cn("flex flex-col md:flex-row h-screen w-full overflow-hidden", className)}>
-      <div className="w-full md:w-1/2 h-full border-r border-gray-200 overflow-auto bg-white p-4">
+    <div className={cn("flex flex-col md:flex-row h-screen w-full overflow-hidden bg-white dark:bg-slate-950", className)}>
+      <div className="w-full md:w-1/2 h-full border-r border-slate-200 dark:border-slate-800 overflow-auto flex flex-col">
         {leftPanel}
       </div>
-      <div className="w-full md:w-1/2 h-full overflow-auto bg-gray-50 p-4">
+      <div className="w-full md:w-1/2 h-full overflow-auto flex flex-col bg-slate-50/30 dark:bg-slate-900/20">
         {rightPanel}
       </div>
     </div>

@@ -1,56 +1,110 @@
 # Aegis: High-Assurance Procurement Gateway
 
 ### 🛡️ Executive Summary
-Aegis is an auditable, high-assurance evaluation engine designed for government procurement (CRPF Tender Evaluation), transforming dense PDF submissions into deterministic compliance verdicts with an immutable human-in-the-loop audit trail.
+Aegis is an auditable, high-assurance evaluation engine designed for government procurement (CRPF Tender Evaluation). It transforms dense PDF submissions into deterministic compliance verdicts with an immutable human-in-the-loop audit trail. Built for precision, Aegis ensures that AI is used only for extraction, while final decision-making is strictly deterministic and visually grounded.
 
 ---
 
-### 🏗️ Architecture & High-Assurance Logic
+### 🏗️ System Architecture
 
-Aegis operates on the principle of **Defensive Programming** and **Visual Grounding**:
+```mermaid
+graph TD
+    User((Officer/Jury)) -->|Interacts| FE[Next.js Frontend]
+    FE -->|API Calls| BE[FastAPI Backend]
+    
+    subgraph "High-Assurance Pipeline"
+        BE -->|Extract Blocks| PDF[PyMuPDF Parser]
+        BE -->|Semantic Context| LLM[Gemini 2.5 LLM]
+        BE -->|Deterministic Validation| PY[Python Rule Engine]
+    end
+    
+    LLM -->|Extracted Evidence| BE
+    PY -->|Audit Logs| DB[(PostgreSQL Ledger)]
+    
+    DB -->|Immutable Logs| FE
+    PDF -->|Visual Grounding| FE
+```
 
-1.  **Dual-Pass Normalization Engine**: 
-    *   **Pass 1 (Deterministic)**: A Python-based numeric parser extracts raw values from text.
-    *   **Pass 2 (Extraction)**: An LLM (Gemini 2.5 Flash) extracts structured evidence and inferred values.
-    *   **Cross-Check**: If the Python parser and LLM inferred values differ beyond a minimal tolerance, the system flags the result as `LLM_PYTHON_MISMATCH`.
+### 🔄 Process Flow
 
-2.  **Proximity & Ambiguity Flagging**:
-    *   If a context sentence contains multiple distinct monetary values (e.g., "Group Turnover vs. Standalone Turnover"), the system automatically flags the result as `PROXIMITY_REVIEW_REQUIRED`, forcing a manual officer review.
+```mermaid
+sequenceDiagram
+    participant O as Officer
+    participant F as Frontend
+    participant B as Backend
+    participant D as Database
+    
+    O->>F: Upload Master Tender (PDF)
+    F->>B: POST /api/v1/tenders/upload
+    B->>D: Store Extracted Criteria & Thresholds
+    B-->>F: Return Criteria List
+    
+    O->>F: Upload Vendor Proposal (PDF)
+    F->>B: POST /api/v1/vendors/process
+    B->>B: Dual-Pass Normalization (AI + Python)
+    B->>D: Commit Audit Records (Append-Only)
+    B-->>F: Return Evaluation Results
+    
+    O->>F: Review Bounding Boxes & Flags
+    O->>F: Submit Human Override (with Justification)
+    F->>B: POST /api/v1/evaluation/override
+    B->>D: Append New Audit Row
+    B-->>F: Update Status
+    
+    O->>F: Generate Final Audit Report (CSV/JSON)
+```
 
-3.  **Immutable Audit Ledger**:
-    *   All evaluation results and human overrides are stored in a PostgreSQL **append-only** table.
-    *   Overrides require a mandatory justification (min. 10 chars) to maintain a transparent chain of custody.
+---
 
-4.  **Visual Grounding**:
-    *   The frontend (Next.js) maps PyMuPDF bounding boxes to the UI, allowing officers to verify extraction results directly against the original immutable PDF.
+### 📂 Project Structure
+
+```text
+aegis/
+├── app/                    # Backend (FastAPI)
+│   ├── api/                # API Routes & Dependencies
+│   ├── core/               # Configuration & LLM Clients
+│   ├── domains/            # Domain-Driven Logic (Tender, Vendor, Eval)
+│   │   ├── tender/         # Tender Ingestion & Models
+│   │   ├── vendor/         # Vendor Processing & Models
+│   │   └── evaluation/     # Rule Engine & Audit Logs
+│   └── main.py             # FastAPI Entry Point
+├── aegis-ui/               # Frontend (Next.js 16 + Tailwind v4)
+│   ├── src/
+│   │   ├── app/            # Next.js App Router (Landing, Upload, Evaluate)
+│   │   ├── components/     # Modular UI (Layout, PDF, Evaluation)
+│   │   └── lib/            # Utilities & Theme Engine
+├── alembic/                # Database Migrations
+├── AGENTS.md               # System Directives & Logic Rules
+└── docker-compose.yml      # Infrastructure (Postgres)
+```
 
 ---
 
 ### 🚀 Local Execution (Zero-Latency)
 
-**Prerequisites**: Docker, Python 3.11+, `uv` package manager.
+**Prerequisites**: Docker, Python 3.11+, `uv` package manager, Node.js 18+.
 
-1.  **Spin up Infrastructure**:
-    ```bash
-    docker-compose up -d
-    ```
+#### 1. Spin up Infrastructure
+```powershell
+docker-compose up -d
+```
 
-2.  **Synchronize Database**:
-    ```bash
-    uv run alembic upgrade head
-    ```
+#### 2. Initialize Backend
+```powershell
+# Install dependencies & run migrations
+uv sync
+uv run alembic upgrade head
 
-3.  **Launch Backend (FastAPI)**:
-    ```bash
-    uv run uvicorn app.main:app --reload
-    ```
+# Launch FastAPI server
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-4.  **Launch Frontend (Next.js)**:
-    ```bash
-    cd aegis-ui
-    npm install
-    npm run dev
-    ```
+#### 3. Initialize Frontend
+```powershell
+cd aegis-ui
+npm install
+npm run dev
+```
 
 ---
 
@@ -58,10 +112,12 @@ Aegis operates on the principle of **Defensive Programming** and **Visual Ground
 
 Use the provided files in `tests/mock_data/` for a perfect 5-minute demo:
 
-1.  **Tender_CRPF_01.pdf**: Ingest first to establish ₹5 Cr turnover and ISO 9001 requirements.
-2.  **Vendor_A_ClearPass.pdf**: Demonstrates a perfect "PASS" state.
-3.  **Vendor_B_ClearFail.pdf**: Demonstrates an automated "FAIL" on the turnover threshold.
-4.  **Vendor_C_Ambiguous.pdf**: Triggers the `MANUAL_REVIEW_REQUIRED` state due to the proximity of "Group" and "Standalone" turnover values, allowing you to demo the **Override Modal**.
+1.  **Ingest Tender**: Navigate to **System Entry**. Upload `Tender_CRPF_01.pdf`. Review the extracted thresholds (₹5 Cr turnover, ISO 9001).
+2.  **Evaluate Vendor**: 
+    *   **Vendor A (ClearPass)**: Upload to see an automated green "PASS".
+    *   **Vendor B (ClearFail)**: Upload to see a deterministic "FAIL" on turnover.
+    *   **Vendor C (Ambiguous)**: Upload to trigger a `PROXIMITY_REVIEW_REQUIRED` flag.
+3.  **Human-in-the-Loop**: Select the flagged item, review the context in the PDF viewer, and submit a **Manual Override** with justification to resolve the audit trail.
 
 ---
 
