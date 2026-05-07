@@ -10,7 +10,7 @@ import Link from 'next/link';
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
-};
+} as const;
 
 export default function LandingPage() {
   return (
