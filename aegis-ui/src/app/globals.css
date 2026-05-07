@@ -1,23 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc; /* slate-50 */
-  --foreground: #0f172a; /* slate-900 */
-  --accent: #2563eb;     /* blue-600 */
-  --accent-dark: #1e40af;/* blue-800 */
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --accent: #2563eb;
+  --accent-dark: #1e40af;
   --surface: #ffffff;
-  --muted: #64748b;      /* slate-500 */
+  --muted: #64748b;
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f8fafc;
+  --accent: #60a5fa;
+  --accent-dark: #3b82f6;
+  --surface: #0f172a;
+  --muted: #94a3b8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-newsreader: var(--font-newsreader), Georgia, "Times New Roman", serif;
 }
 
-/* Force light mode for civic-tech government aesthetic */
 html {
-  color-scheme: light;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -28,28 +37,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar for government-grade clean look */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+/* Newsreader utility — used via className="font-newsreader" */
+.font-newsreader {
+  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
 }
 
-/* Smooth page transitions */
-.page-transition-enter {
-  opacity: 0;
-  transform: translateY(12px);
-}
-.page-transition-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 400ms ease-out, transform 400ms ease-out;
-}
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb { background: #334155; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
