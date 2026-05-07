@@ -18,14 +18,19 @@ import sys
 from os.path import abspath, dirname
 sys.path.insert(0, abspath(dirname(dirname(__file__))))
 
+import os
 from app.core.config import settings
 from app.core.database import Base
+
+# If the full URI is explicitly set in the environment, use it. Otherwise, build it from settings.
+db_url = os.environ.get("SQLALCHEMY_DATABASE_URI", settings.SQLALCHEMY_DATABASE_URI)
+config.set_main_option("sqlalchemy.url", db_url)
+
 # Import models to ensure they are registered with Base.metadata
 from app.domains.tender.models import Tender, Criterion
 from app.domains.vendor.models import Vendor
 from app.domains.evaluation.models import EvaluationAuditRecord
 
-config.set_main_option("sqlalchemy.url", settings.SQLALCHEMY_DATABASE_URI)
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
