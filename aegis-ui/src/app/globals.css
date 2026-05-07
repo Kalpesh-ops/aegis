@@ -1,50 +1,69 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
-  --accent: #2563eb;
-  --accent-dark: #1e40af;
-  --surface: #ffffff;
-  --muted: #64748b;
 }
 
 .dark {
-  --background: #020617;
-  --foreground: #f8fafc;
-  --accent: #60a5fa;
-  --accent-dark: #3b82f6;
-  --surface: #0f172a;
-  --muted: #94a3b8;
+  --background: #020617; /* bg-slate-950 */
+  --foreground: #f8fafc; /* text-slate-50 */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
-  --font-newsreader: var(--font-newsreader), Georgia, "Times New Roman", serif;
+@theme {
+  --font-satoshi: "Satoshi", system-ui, -apple-system, sans-serif;
+  --font-newsreader: var(--font-newsreader), Georgia, serif;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  @apply antialiased bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-50 font-sans;
+  font-family: var(--font-satoshi);
 }
 
-/* Newsreader utility — used via className="font-newsreader" */
-.font-newsreader {
-  font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-.dark ::-webkit-scrollbar-thumb { background: #334155; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Animations */
+@keyframes bounce-dot {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.animate-bounce-dot {
+  animation: bounce-dot 1s infinite;
+}

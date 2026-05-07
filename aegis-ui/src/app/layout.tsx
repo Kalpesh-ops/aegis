@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
-import { Inter, Newsreader } from "next/font/google";
+import { Newsreader } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
 
 const newsreader = Newsreader({
   subsets: ["latin"],
@@ -27,11 +23,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${newsreader.variable}`}>
-      <body className="min-h-full flex flex-col font-sans antialiased bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-300">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          {children}
-        </ThemeProvider>
+    <html lang="en" suppressHydrationWarning className={`${newsreader.variable} scroll-smooth`}>
+      <body className="min-h-full flex flex-col antialiased bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-300">
+        <SmoothScroll>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            {children}
+          </ThemeProvider>
+        </SmoothScroll>
       </body>
     </html>
   );
