@@ -21,7 +21,7 @@ const stagger = {
 };
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 80, damping: 16 } },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 80, damping: 16 } },
 };
 
 const STEPS = ["Upload Tender", "Confirm Criteria", "Upload Vendor", "Evaluate"];
@@ -242,7 +242,7 @@ export default function LandingPage() {
 
           {/* Footer */}
           <footer className="relative z-10 bg-slate-950 text-slate-500 text-xs py-6 text-center border-t border-slate-800">
-            <p>Aegis High-Assurance Procurement Gateway · AI for Bharat Hackathon 2025 · Theme 3: CRPF Tender Evaluation</p>
+            <p>Aegis High-Assurance Procurement Gateway · AI for Bharat Hackathon 2026 · Theme 3: CRPF Tender Evaluation</p>
             <p className="mt-1 text-slate-600">FastAPI · Next.js · PostgreSQL · Gemini LLM · PyMuPDF</p>
           </footer>
         </>
@@ -266,8 +266,8 @@ export default function LandingPage() {
                         <div className={cn(
                           "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all",
                           step > sIdx ? "bg-green-500 text-white" :
-                          step === sIdx ? "bg-blue-500 text-white ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900" :
-                          "bg-slate-700 text-slate-400"
+                            step === sIdx ? "bg-blue-500 text-white ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900" :
+                              "bg-slate-700 text-slate-400"
                         )}>
                           {step > sIdx ? <CheckCircle className="w-4 h-4" /> : sIdx}
                         </div>
